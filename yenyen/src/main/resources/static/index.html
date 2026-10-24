@@ -1,0 +1,604 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Java Calculator</title>
+
+    
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: "Trebuchet MS", Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        margin: 0;
+        padding: 30px 20px;
+        background:
+            radial-gradient(circle at 15% 20%, #fff0f6 0 5px, transparent 6px),
+            radial-gradient(circle at 85% 75%, #ffd6e7 0 7px, transparent 8px),
+            linear-gradient(135deg, #ffe4ef, #f5e6ff, #fff0f5);
+        background-size: 55px 55px, 75px 75px, cover;
+    }
+
+    .calculator {
+        position: relative;
+        width: 100%;
+        max-width: 350px;
+        padding: 25px;
+        border: 3px solid #fff;
+        border-radius: 32px;
+        background: linear-gradient(160deg, #fffafd, #ffeaf3);
+        box-shadow:
+            0 15px 0 #e8b4cd,
+            0 25px 45px rgba(188, 112, 157, 0.25);
+    }
+
+    /* Cute floating sticker decorations */
+    .calculator::before {
+        content: "🎀";
+        position: absolute;
+        top: -27px;
+        right: 18px;
+        font-size: 43px;
+        transform: rotate(12deg);
+        filter: drop-shadow(0 3px 2px #e8b4cd);
+        z-index: 2;
+    }
+
+    .calculator::after {
+        content: "♡";
+        position: absolute;
+        left: -17px;
+        top: 105px;
+        display: grid;
+        place-items: center;
+        width: 42px;
+        height: 42px;
+        border: 2px solid white;
+        border-radius: 50%;
+        background: #ffb8d2;
+        color: #fff;
+        font-size: 30px;
+        transform: rotate(-15deg);
+        box-shadow: 0 4px 8px #e8b4cd;
+    }
+
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 12px;
+        color: #bd7398;
+        font-size: 10px;
+        font-weight: bold;
+        letter-spacing: 1.5px;
+    }
+
+    .header span:last-child {
+        color: #ee82ad;
+        white-space: nowrap;
+    }
+
+    .display {
+        position: relative;
+        width: 100%;
+        min-height: 125px;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        align-items: flex-end;
+        padding: 18px 12px 22px;
+        margin-bottom: 15px;
+        overflow: hidden;
+        border: 2px solid #fff;
+        border-radius: 24px;
+        background: linear-gradient(135deg, #fff1f7, #f8edff);
+        box-shadow: inset 0 3px 8px rgba(199, 123, 166, 0.12);
+    }
+
+    .display::before {
+        content: "✧";
+        position: absolute;
+        top: 8px;
+        left: 12px;
+        color: #e7a1c6;
+        font-size: 20px;
+    }
+
+    .display::after {
+        content: "♡";
+        position: absolute;
+        top: 8px;
+        right: 12px;
+        color: #ed9ec2;
+        font-size: 18px;
+    }
+
+    #expression {
+        width: 100%;
+        min-height: 24px;
+        color: #c38baa;
+        text-align: right;
+        font-size: 15px;
+        overflow-wrap: anywhere;
+    }
+
+    #screen {
+        width: 100%;
+        color: #9e527e;
+        text-align: right;
+        font-size: clamp(34px, 10vw, 48px);
+        font-weight: bold;
+        white-space: nowrap;
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+
+    #screen::-webkit-scrollbar {
+        display: none;
+    }
+
+    .buttons {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 11px;
+    }
+
+    button {
+        aspect-ratio: 1;
+        min-width: 0;
+        border: 2px solid #fff;
+        border-radius: 22px;
+        font-family: inherit;
+        font-size: 22px;
+        font-weight: bold;
+        cursor: pointer;
+        color: #a65c85;
+        background: linear-gradient(145deg, #fff, #ffe6f0);
+        box-shadow: 0 4px 0 #efc0d7;
+        transition:
+            transform 0.15s ease,
+            box-shadow 0.15s ease,
+            background 0.15s ease;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    button:hover {
+        background: #fff0f7;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 0 #efc0d7;
+    }
+
+    button:active {
+        transform: translateY(3px) scale(0.96);
+        box-shadow: 0 1px 0 #efc0d7;
+    }
+
+    button:disabled {
+        cursor: wait;
+        opacity: 0.7;
+    }
+
+    .utility {
+        color: #fff;
+        background: linear-gradient(145deg, #d7b5f5, #bd95e6);
+        box-shadow: 0 4px 0 #a982d0;
+    }
+
+    .utility:hover {
+        background: #cba6ee;
+        box-shadow: 0 6px 0 #a982d0;
+    }
+
+    .operator,
+    .equals {
+        color: #fff;
+        background: linear-gradient(145deg, #ffadd0, #f27eae);
+        box-shadow: 0 4px 0 #df6799;
+    }
+
+    .operator:hover,
+    .equals:hover {
+        background: linear-gradient(145deg, #ffc5df, #f58ab7);
+        box-shadow: 0 6px 0 #df6799;
+    }
+
+    .operator.selected {
+        color: #e66b9e;
+        background: #fff;
+        border-color: #f5a5c8;
+        box-shadow: 0 4px 0 #e8b4cd;
+    }
+
+    .zero {
+        grid-column: span 2;
+        aspect-ratio: auto;
+        border-radius: 30px;
+        text-align: left;
+        padding-left: 25px;
+    }
+
+    #status {
+        min-height: 18px;
+        margin-top: 22px;
+        text-align: center;
+        font-size: 11px;
+        font-weight: bold;
+        color: #c184a5;
+    }
+
+    @media (max-width: 380px) {
+        .calculator {
+            padding: 19px;
+        }
+
+        .buttons {
+            gap: 9px;
+        }
+
+        button {
+            font-size: 19px;
+            border-radius: 18px;
+        }
+
+         .calculator::after {
+             left: -12px;
+             width: 32px;
+             height: 32px;
+             font-size: 23px;
+         }
+     }
+ </style>
+
+</head>
+
+<body>
+    <main class="calculator">
+        <div class="header">
+            <span>JAVA CALCULATOR</span>
+            <span>● ONLINE</span>
+        </div>
+
+        <div class="display">
+            <div id="expression" aria-label="Expression"></div>
+            <div id="screen" role="status"
+                 aria-live="polite">0</div>
+        </div>
+
+        <div class="buttons">
+            <button class="utility" data-action="clear">AC</button>
+            <button class="utility" data-action="delete"
+                    aria-label="Delete last digit">DEL</button>
+            <button class="utility" data-action="sign">+/−</button>
+            <button class="operator" data-op="divide">÷</button>
+
+            <button data-number="7">7</button>
+            <button data-number="8">8</button>
+            <button data-number="9">9</button>
+            <button class="operator" data-op="multiply">×</button>
+
+            <button data-number="4">4</button>
+            <button data-number="5">5</button>
+            <button data-number="6">6</button>
+            <button class="operator" data-op="subtract">−</button>
+
+            <button data-number="1">1</button>
+            <button data-number="2">2</button>
+            <button data-number="3">3</button>
+            <button class="operator" data-op="add">+</button>
+
+            <button class="zero" data-number="0">0</button>
+            <button data-action="decimal">.</button>
+            <button class="equals" data-action="equals">=</button>
+        </div>
+
+        <div id="status">Powered by Java &amp; Spring Boot</div>
+    </main>
+
+    <script>
+        const screen = document.getElementById("screen");
+        const expression = document.getElementById("expression");
+        const status = document.getElementById("status");
+        const buttons = document.querySelector(".buttons");
+
+        let currentInput = "0";
+        let firstOperand = null;
+        let operator = null;
+        let shouldResetScreen = false;
+        let lastOperation = null;
+        let requestInProgress = false;
+
+        const symbols = {
+            add: "+",
+            subtract: "−",
+            multiply: "×",
+            divide: "÷"
+        };
+
+        function updateDisplay() {
+            screen.textContent = currentInput;
+        }
+
+        function clearSelection() {
+            document.querySelectorAll(".operator")
+                .forEach(button => {
+                    button.classList.remove("selected");
+                });
+        }
+
+        function showError(message) {
+            status.style.color = "#ff6b6b";
+            status.textContent = message;
+        }
+
+        function showStatus(message) {
+            status.style.color = "#4ade80";
+            status.textContent = message;
+        }
+
+        function enterNumber(number) {
+            if (shouldResetScreen) {
+                currentInput = number;
+                shouldResetScreen = false;
+            } else if (currentInput === "0") {
+                currentInput = number;
+            } else if (currentInput === "-0") {
+                currentInput = "-" + number;
+            } else if (currentInput.length < 16) {
+                currentInput += number;
+            }
+
+            updateDisplay();
+        }
+
+        function enterDecimal() {
+            if (shouldResetScreen) {
+                currentInput = "0";
+                shouldResetScreen = false;
+            }
+
+            if (!currentInput.includes(".")) {
+                currentInput += ".";
+            }
+
+            updateDisplay();
+        }
+
+        function toggleSign() {
+            if (currentInput === "0") return;
+
+            currentInput = currentInput.startsWith("-")
+                ? currentInput.slice(1)
+                : "-" + currentInput;
+
+            updateDisplay();
+        }
+
+        function deleteDigit() {
+            if (shouldResetScreen) return;
+
+            currentInput = currentInput.length <= 1 ||
+                (currentInput.length === 2 &&
+                 currentInput.startsWith("-"))
+                ? "0"
+                : currentInput.slice(0, -1);
+
+            updateDisplay();
+        }
+
+        function clearCalculator() {
+            currentInput = "0";
+            firstOperand = null;
+            operator = null;
+            shouldResetScreen = false;
+            lastOperation = null;
+
+            expression.textContent = "";
+            clearSelection();
+            updateDisplay();
+            showStatus("Powered by Java & Spring Boot");
+        }
+
+        function chooseOperator(nextOperator) {
+            if (requestInProgress) return;
+
+            const value = Number(currentInput);
+
+            if (!Number.isFinite(value)) {
+                showError("Please enter a valid number.");
+                return;
+            }
+
+            if (operator !== null && !shouldResetScreen) {
+                calculate();
+                return;
+            }
+
+            firstOperand = value;
+            operator = nextOperator;
+            lastOperation = null;
+            shouldResetScreen = true;
+
+            expression.textContent =
+                `${currentInput} ${symbols[operator]}`;
+
+            clearSelection();
+
+            const activeButton = document.querySelector(
+                `[data-op="${nextOperator}"]`
+            );
+
+            if (activeButton) {
+                activeButton.classList.add("selected");
+            }
+
+            showStatus("Ready");
+        }
+
+        async function calculate() {
+            if (requestInProgress) return;
+
+            let num1;
+            let num2;
+            let operation;
+
+            if (operator !== null) {
+                if (shouldResetScreen) return;
+
+                num1 = firstOperand;
+                num2 = Number(currentInput);
+                operation = operator;
+
+                lastOperation = {
+                    operator: operation,
+                    operand: num2
+                };
+            } else if (lastOperation !== null) {
+                num1 = Number(currentInput);
+                num2 = lastOperation.operand;
+                operation = lastOperation.operator;
+            } else {
+                return;
+            }
+
+            const first = num1;
+            const second = num2;
+            const op = operation;
+
+            expression.textContent =
+                `${first} ${symbols[op]} ${second} =`;
+
+            requestInProgress = true;
+
+            document.querySelectorAll(".buttons button")
+                .forEach(button => button.disabled = true);
+
+            showStatus("Calculating...");
+
+            try {
+                const params = new URLSearchParams({
+                    num1: String(first),
+                    num2: String(second),
+                    operator: op
+                });
+
+                const response = await fetch(
+                    `/calculate?${params.toString()}`
+                );
+
+                const data = await response.json();
+
+                if (!response.ok || data.error) {
+                    throw new Error(
+                        data.error || "Calculation failed."
+                    );
+                }
+
+                const result = Number(data.result);
+
+                if (!Number.isFinite(result)) {
+                    throw new Error("Invalid result from server.");
+                }
+
+                currentInput = String(result);
+                firstOperand = null;
+                operator = null;
+                shouldResetScreen = true;
+
+                updateDisplay();
+                clearSelection();
+                showStatus("Calculation successful");
+
+            } catch (error) {
+                showError(
+                    error.message || "Unable to contact server."
+                );
+
+                // Allow the user to correct the calculation.
+                if (operator === null) {
+                    operator = op;
+                    firstOperand = first;
+                    currentInput = String(second);
+                    shouldResetScreen = false;
+                }
+
+            } finally {
+                requestInProgress = false;
+
+                document.querySelectorAll(".buttons button")
+                    .forEach(button => button.disabled = false);
+            }
+        }
+
+        buttons.addEventListener("click", event => {
+            const button = event.target.closest("button");
+
+            if (!button || requestInProgress) return;
+
+            if (button.dataset.number !== undefined) {
+                enterNumber(button.dataset.number);
+                return;
+            }
+
+            if (button.dataset.op) {
+                chooseOperator(button.dataset.op);
+                return;
+            }
+
+            switch (button.dataset.action) {
+                case "clear":
+                    clearCalculator();
+                    break;
+                case "delete":
+                    deleteDigit();
+                    break;
+                case "sign":
+                    toggleSign();
+                    break;
+                case "decimal":
+                    enterDecimal();
+                    break;
+                case "equals":
+                    calculate();
+                    break;
+            }
+        });
+
+        // Optional keyboard support
+        document.addEventListener("keydown", event => {
+            if (requestInProgress) return;
+
+            if (/^[0-9]$/.test(event.key)) {
+                enterNumber(event.key);
+            } else if (event.key === ".") {
+                enterDecimal();
+            } else if (event.key === "Backspace") {
+                deleteDigit();
+            } else if (event.key === "Escape") {
+                clearCalculator();
+            } else if (event.key === "Enter" ||
+                       event.key === "=") {
+                calculate();
+            } else if (event.key === "+") {
+                chooseOperator("add");
+            } else if (event.key === "-") {
+                chooseOperator("subtract");
+            } else if (event.key === "*") {
+                chooseOperator("multiply");
+            } else if (event.key === "/") {
+                event.preventDefault();
+                chooseOperator("divide");
+            }
+        });
+    </script>
+</body>
+</html>
